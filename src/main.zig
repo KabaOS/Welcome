@@ -20,7 +20,7 @@ pub const global_window = struct {
     pub const functions = [_]*const fn (bool) void{
         @import("pages/welcome.zig").page,
         @import("pages/layout.zig").page,
-        @import("pages/wifi.zig").page,
+        //@import("pages/wifi.zig").page,
         @import("pages/finish.zig").page,
     };
     pub var index: usize = 0;
