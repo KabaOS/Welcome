@@ -25,9 +25,9 @@ fn ip_address_has() !bool {
     var buf_reader = std.io.bufferedReader(file.reader());
     const reader = buf_reader.reader();
 
-    const line: [129]u8 = undefined;
+    var line: [129]u8 = undefined;
 
-    const read = (try reader.read(@constCast(&line)));
+    const read = try reader.read(&line);
 
     assert(read == 129 or read == 128);
     return read == 129;
