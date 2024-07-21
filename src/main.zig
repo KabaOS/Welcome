@@ -7,6 +7,7 @@ pub const c = @cImport({
     @cInclude("gio/gio.h");
     @cInclude("glib.h");
     @cInclude("adwaita.h");
+    @cInclude("xfconf/xfconf.h");
 });
 
 pub const global_window = struct {

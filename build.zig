@@ -16,6 +16,7 @@ pub fn build(b: *std.Build) void {
     exe.linkSystemLibrary("gio-2.0");
     exe.linkSystemLibrary("glib-2.0");
     exe.linkSystemLibrary("libadwaita-1");
+    exe.linkSystemLibrary("libxfconf-0");
 
     b.installArtifact(exe);
 

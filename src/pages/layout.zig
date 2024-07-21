@@ -22,11 +22,16 @@ var languageDD: ?*c.GtkWidget = null;
 var layoutHolder: ?*c.GtkWidget = null;
 var screenLayout: ?*c.GtkWidget = null;
 
+var keyboardLayoutChannel: ?*c.XfconfChannel = null;
+
 pub fn page(_: bool) void {
     if (first) {
         first = false;
         layouts_set() catch @panic("Something is wrong with your xkb base.lsl");
     }
+
+    _ = c.xfconf_init(null);
+    keyboardLayoutChannel = c.xfconf_channel_new("keyboard-layout");
 
     const languageList = c.gtk_string_list_new(null);
     layoutList = c.gtk_string_list_new(null);
@@ -65,7 +70,7 @@ pub fn page(_: bool) void {
             const selectedLanguage = c.adw_combo_row_get_selected(@ptrCast(languageDD));
             const selectedVariant = c.adw_combo_row_get_selected(@ptrCast(layoutDD));
             if (selectedVariant == 0) {
-                layout_update(layouts.code.items[selectedLanguage][0..2]);
+                layout_update(layouts.code.items[selectedLanguage][0..2], "");
             } else {
                 const currentLanguage = layouts.code.items[selectedLanguage];
                 var currentVariant: ?[]u8 = null;
@@ -79,13 +84,8 @@ pub fn page(_: bool) void {
                         index += 1;
                     }
                 }
-                var result = allocator.alloc(u8, currentLanguage.len + currentVariant.?.len) catch @panic("Failed to initilize string");
-                defer allocator.free(result);
 
-                std.mem.copyForwards(u8, result[0..], currentLanguage);
-                result[currentLanguage.len - 1] = '+';
-                std.mem.copyForwards(u8, result[currentLanguage.len..], currentVariant.?);
-                layout_update(result);
+                layout_update(currentLanguage, currentVariant.?);
             }
             window.pages.layout.variantSelected = @intCast(selectedVariant);
         }
@@ -235,7 +235,8 @@ fn layouts_set() !void {
     _ = layouts.code.pop();
 }
 
-fn layout_update(name: []const u8) void {
-    const settings = c.g_settings_new("org.gnome.desktop.input-sources");
-    _ = c.g_settings_set_value(settings, "sources", c.g_variant_new_array(c.g_variant_type_new("(ss)"), &[_]?*c.GVariant{c.g_variant_new_tuple(&[_]?*c.GVariant{ c.g_variant_new_string("xkb"), c.g_variant_new_string(@ptrCast(name)) }, 2)}, 1));
+fn layout_update(layout: []const u8, variant: []const u8) void {
+    _ = c.xfconf_channel_set_string(keyboardLayoutChannel, "/Default/XkbDisable", "false");
+    _ = c.xfconf_channel_set_string(keyboardLayoutChannel, "/Default/XkbLayout", @ptrCast(layout));
+    _ = c.xfconf_channel_set_string(keyboardLayoutChannel, "/Default/XkbVariant", @ptrCast(variant));
 }
